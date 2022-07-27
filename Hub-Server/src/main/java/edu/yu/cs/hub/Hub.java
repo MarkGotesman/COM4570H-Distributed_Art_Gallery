@@ -10,8 +10,6 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import java.net.URL;
 import java.util.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.springframework.http.MediaType;
 
 
@@ -28,13 +26,10 @@ public class Hub {
     //Hub talks back to gallery and returns the updated list of the IPs 
     @POST
     @Transactional
-    public long create(GalleryInfo gi, @Context UriInfo uriInfo) throws JsonProcessingException {
+    public long create(GalleryInfo gi) {
         galleryInfoRepo.persist(gi);
         utility.setLeaderID();
         utility.updateServers();
-
-        UriBuilder uriBuilder = uriInfo.getAbsolutePathBuilder();
-        uriBuilder.path(Long.toString(gi.id));
         
         return gi.id;
     }
@@ -45,11 +40,12 @@ public class Hub {
     @Transactional
     public Response update(@PathParam("id") Long id, URL url) {
         GalleryInfo gi = galleryInfoRepo.findById(id);
-        if (gi == null) {
-            throw new NotFoundException();
-        }
-        gi.url = url; 
         
+        if (gi.active == false) {
+            gi.active = true;
+        }
+        
+        gi.url = url;
         utility.updateServers();
         return Response.status(Status.OK).build();
     }
@@ -76,3 +72,4 @@ public class Hub {
 }
 
 
+    

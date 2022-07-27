@@ -11,6 +11,7 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import edu.yu.cs.gallery.repositories.GalleryRepository;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
+import io.quarkus.logging.Log;
 
 @Singleton
 public class Utility {
@@ -41,8 +44,8 @@ public class Utility {
     }
     
     //URI must contain the string "batch" in place of the galleryId 
-    private int redirect(long galleryId, UriInfo uriInfo, HttpMethod httpMethod, Object body,
-            List<Object> returnEntities) throws URISyntaxException {
+    @Fallback(fallbackMethod = "fallbackRedirect")
+    protected void redirect(long galleryId, UriInfo uriInfo, HttpMethod httpMethod, Object body, List<Object> returnEntities) throws URISyntaxException {
 
         WebClient webClient = WebClient.create(allServers.get(galleryId).toString());
 
@@ -57,7 +60,6 @@ public class Utility {
                 .block();
 
         returnEntities.addAll(List.of(response.getBody()));
-        return response.getStatusCodeValue();
     }
 
     protected Response readRedirect (long[] galleryIDs, UriInfo uriInfo, Request request, Runnable<Response> localMethod) throws URISyntaxException {
@@ -65,19 +67,14 @@ public class Utility {
         
         for (long galleryID : galleryIDs) {
             if (allServers.containsKey(galleryID)) {
-                int statusCode;
                 
                 if (galleryID == gallery.id) {
                     Response response = localMethod.run(this.gallery);
                     returnEntities.addAll(List.of(response.getEntity()));
-                    statusCode = response.getStatus();
+                    response.getStatus();
                 } else {
-                    statusCode = redirect(galleryID, uriInfo, HttpMethod.valueOf(request.getMethod()), "",
+                    redirect(galleryID, uriInfo, HttpMethod.valueOf(request.getMethod()), "",
                             returnEntities);
-                }
-                
-                if (statusCode != 200) {
-                    return Response.status(statusCode).entity(returnEntities).build();
                 }
             }
         }
@@ -96,23 +93,24 @@ public class Utility {
 
         for (Gallery gallery : galleries) {
             if (allServers.containsKey(this.gallery.id)) {
-                int statusCode;
+                
 
                 if (this.gallery.id == gallery.id) {
                     Response response = localMethod.run(gallery);
                     returnEntities.addAll(List.of(response.getEntity()));
-                    statusCode = response.getStatus();
+                    response.getStatus();
                 } else {
-                    statusCode = redirect(gallery.id, uriInfo, HttpMethod.valueOf(request.getMethod()), gallery.artList, returnEntities);
-                }
-
-                if (statusCode != 200 && statusCode != 201) {
-                    return Response.status(statusCode).entity(returnEntities).build();
+                     redirect(gallery.id, uriInfo, HttpMethod.valueOf(request.getMethod()), gallery.artList, returnEntities);
                 }
             }
         }
 
         return Response.status(Status.OK).entity(returnEntities).build();
+    }
+    
+    protected void fallbackRedirect (long galleryId, UriInfo uriInfo, HttpMethod httpMethod, Object body, List<Object> returnEntities) throws URISyntaxException {
+        Log.info("Failed Gallery ID: " + galleryId + ", URI: " + uriInfo);
+        returnEntities.add("Failed call to Gallery ID: " + galleryId );
     }
     
     @FunctionalInterface

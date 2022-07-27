@@ -50,7 +50,7 @@ public class Hub {
         }
         gi.url = url; 
         
-        utility.updateServers ();
+        utility.updateServers();
         return Response.status(Status.OK).build();
     }
     
@@ -65,4 +65,14 @@ public class Hub {
         }
         return deleted ? Response.noContent().build() : Response.status(BAD_REQUEST).build();
     }
+
+    // for testing
+    @GET
+    @Path("/resetleader")
+    public void resetLeader() {
+        utility.setLeaderID();
+        utility.updateServers();
+    }
 }
+
+

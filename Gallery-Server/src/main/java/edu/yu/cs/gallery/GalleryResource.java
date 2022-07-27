@@ -175,4 +175,11 @@ public class GalleryResource {
     public Map<Long, URL> IPs() {
         return utility.allServers;
     }
+
+    @Path("/leader")
+    @GET
+    public long leader() {
+        return utility.leaderID;
+    }
+
 }

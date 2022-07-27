@@ -2,9 +2,12 @@ package edu.yu.cs.hub;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.transaction.Transactional;
 
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import io.quarkus.logging.Log;
 import reactor.core.publisher.Mono;
 
 import java.net.URL;
@@ -18,19 +21,25 @@ public class Utility {
     GalleryInfoRepository galleryInfoRepo;
     
     protected void setLeaderID (){
-        if (galleryInfoRepo.count() > 0) {
-            Random random = new Random();
-            hubLeaderID = random.nextLong() % (galleryInfoRepo.count()) + 1;
+        if (galleryInfoRepo.count() > 0) {            
+            List<Long> list = new ArrayList<>(galleryInfoRepo.toMap().keySet());
+            Collections.shuffle(list);
+            hubLeaderID = list.get(0);
+            
         }
     }
     
     protected void updateServers() {
-        Map<Long, URL> allGI = galleryInfoRepo.toMap();
-        for (long currentId : allGI.keySet()) {
+        for (GalleryInfo gi : galleryInfoRepo.listAll()) {
             // Code to update each IP with the new data
-            URL url = galleryInfoRepo.toMap().get(currentId);
-            postMapToGallery(url);
-            postLeaderToGallery(url);
+            URL url = gi.url;
+            try {
+                postMapToGallery(url);
+                postLeaderToGallery(url);
+            } catch (WebClientResponseException e) {
+                Log.info(e);
+            } 
+
         }
     }
     
@@ -43,7 +52,7 @@ public class Utility {
             postMapToGallery(url);
         }
     }
-    
+            
     protected void postLeaderToGallery(URL url) {
         WebClient webClient = WebClient.create(url.toString());
         webClient.post()
@@ -60,5 +69,28 @@ public class Utility {
                 .body(Mono.just(galleryInfoRepo.toMap()), Map.class)
                 .retrieve()
                 .bodyToMono(String.class).block();
+    }
+    
+    protected void galleryHealthCheck () {
+        for (GalleryInfo galleryInfo : galleryInfoRepo.listAll()) {
+            WebClient webClient = WebClient.create(galleryInfo.url.toString() + "/q/health/live");
+            try {
+                   webClient.get() 
+                    .retrieve()
+                    .toEntity(Object.class)
+                    .block();
+            } catch (WebClientResponseException e) {
+                serverFailure(galleryInfo.id);
+            }
+        }
+    }
+    
+    @Transactional
+    protected void serverFailure(long galleryInfoId) {
+        galleryInfoRepo.deleteById(galleryInfoId);
+        if (galleryInfoId == hubLeaderID) {
+            setLeaderID();
+        }
+        updateServers();
     }
 }

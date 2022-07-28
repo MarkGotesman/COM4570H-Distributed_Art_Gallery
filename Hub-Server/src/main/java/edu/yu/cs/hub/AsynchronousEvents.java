@@ -20,7 +20,7 @@ public class AsynchronousEvents {
         utility.updateServers();
     }
     
-    @Scheduled(every="10s")
+    @Scheduled(every="20s")
     public void healthCheck() {
         utility.galleryHealthCheck();
     }

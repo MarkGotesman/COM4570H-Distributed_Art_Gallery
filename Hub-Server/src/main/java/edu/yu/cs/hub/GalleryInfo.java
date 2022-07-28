@@ -9,4 +9,5 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 @Entity
 public class GalleryInfo extends PanacheEntity {
     public URL url;
+    public boolean active = true;
 }

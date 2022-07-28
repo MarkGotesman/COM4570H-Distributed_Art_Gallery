@@ -30,7 +30,7 @@ public class Utility {
     }
     
     protected void updateServers() {
-        for (GalleryInfo gi : galleryInfoRepo.listAll()) {
+        for (GalleryInfo gi : galleryInfoRepo.listAllActive()) {
             // Code to update each IP with the new data
             URL url = gi.url;
             try {
@@ -72,7 +72,7 @@ public class Utility {
     }
     
     protected void galleryHealthCheck () {
-        for (GalleryInfo galleryInfo : galleryInfoRepo.listAll()) {
+        for (GalleryInfo galleryInfo : galleryInfoRepo.listAllActive()) {
             WebClient webClient = WebClient.create(galleryInfo.url.toString() + "/q/health/live");
             try {
                    webClient.get() 
@@ -87,7 +87,8 @@ public class Utility {
     
     @Transactional
     protected void serverFailure(long galleryInfoId) {
-        galleryInfoRepo.deleteById(galleryInfoId);
+        GalleryInfo galleryInfo = galleryInfoRepo.findById(galleryInfoId);
+        galleryInfo.active = false;
         if (galleryInfoId == hubLeaderID) {
             setLeaderID();
         }

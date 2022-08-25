@@ -1,24 +1,32 @@
 # Part 1: Introduction & Technology Used
-**Goal:** model a distributed datastore with horizontal scaling of servers, while remaining client agnostic via redirects. In our project, we modeled art galleries storing art.
+### Goal:
+Model a distributed datastore with horizontal scaling of servers, while remaining client agnostic via redirects. In our project, we modeled art galleries storing art.
 
-Written in Java.
 
-Software used:
+### Technology Used:
+**Language:** Java.
 
 **Server Framework:** Quarkus.
+
 **Web Tunneling Service:** Ngrok.
+
 **External HTTP Client:** Postman.
+
 **Internal (Java) HTTP Client:** Spring Webclient.
+
 **Database:** H2.
+
 **JPA Implementation:** Hibernate ORM, Simplified with Panache.
 
 Significant packages used in code:
 java.net, javax.ws, org.eclipse.microprofile, org.springframework, quarkus.hibernate.orm.panache
 
-Launching was done via environment variables in VS Code launch.json launch configurations, and debugging was likewise done within VS Code and debug ports. 
+Launching was done via environment variables in VSCode launch.json launch configurations, and debugging was likewise done within VS Code and debug ports. 
 
-Panache was used to simplify the JPA layer and entity creation.
-# Part 2: Coding
+### Final Result & Demo:
+https://drive.google.com/file/d/1BdabtOh2molJYoU2TSoxmjRgW2eb8lwb
+
+# Part 2: Coding Process
 ## Stage 1: Persistence
 **Entities.** Created Art and Gallery entities as models, extended PanacheEntity to inherit many useful methods. Fields were kept simple (Art has a name, creator, and Gallery; Gallery just a name and list of Arts). Many Arts would be stored under one Gallery, so Art’s Gallery field was marked with the @ManyToOne annotation, and Gallery was given a field called artList annotated with @OneToMany(mappedBy = "gallery". (Files created: Art.java, Gallery.java)
 

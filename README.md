@@ -21,7 +21,7 @@ Model a distributed datastore with horizontal scaling of servers, while remainin
 Significant packages used in code:
 java.net, javax.ws, org.eclipse.microprofile, org.springframework, quarkus.hibernate.orm.panache
 
-Launching was done via environment variables in VSCode launch.json launch configurations, and debugging was likewise done within VS Code and debug ports. 
+Launching was done via environment variables in VSCode launch.json launch configurations, and debugging was likewise done within VSCode and debug ports. 
 
 ### Final Result & Demo:
 https://drive.google.com/file/d/1BdabtOh2molJYoU2TSoxmjRgW2eb8lwb

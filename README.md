@@ -1,3 +1,15 @@
+# Overview
+
+This project was completed over ~7 weeks in the summer of 2022, as part of a mentorship program through Yeshiva University. The intent was to gain exposure to basic, core concepts in distributed systems, and design a system that highlighted those. To that end, our project focused less on the _specific_ details of an entirely fleshed-out storage system catered to art galleries, but more on the basic entity relationship and how that could be scaled horizontally across servers.
+
+The project was written in Java and broke down into 6 stages. Initially, we focused only on local entity persistence and a basic CRUD API, exposed with the Quarkus server framework. Then, in stage 2, the system was distributed across multiple virtual machines, which were synchronized together with the help of a hub server. This enabled a request to a wrong server URL to be made, where the client would receive a redirect. 
+
+In stages 3 and 4 we took advantage of the cross-talk between servers to expose an endpoint that allowed batch reading and writing across _multiple_ servers. To solve the issue of a potential conflict during batch writing, we implemented a leader-election pattern where only one server could batch-write. This was stored/propagated by the hub, and the leader was randomized to distribute the load.
+
+Stages 5 and 6 focused on making the system more resilient to failure. In stage 5 we added regular health checks by the hub, where a server would be pinged every 20s on a designated health endpoint, and an unhealthy server removed from the system. In stage 6 we added fallback methods to ensure that if a given call to a server during a batch call failed for whatever reason, the batch call would still continue with a message indicating that a specific part of the call failed (i.e. we transitioned from a fail-fast to a fail-safe approach).
+
+A video demoing these stages and aspects of the project can be found below.
+
 # Part 1: Introduction & Technology Used
 ### Goal:
 Model a distributed datastore with horizontal scaling of servers, while remaining client agnostic via redirects. In our project, we modeled art galleries storing art.

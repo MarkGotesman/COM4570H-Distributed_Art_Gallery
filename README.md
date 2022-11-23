@@ -40,7 +40,7 @@ https://drive.google.com/file/d/1BdabtOh2molJYoU2TSoxmjRgW2eb8lwb
 
 # Part 2: Coding Process
 ## Stage 1: Persistence
-**Entities.** Created Art and Gallery entities as models, extended PanacheEntity to inherit many useful methods. Fields were kept simple (Art has a name, creator, and Gallery; Gallery just a name and list of Arts). Many Arts would be stored under one Gallery, so Art’s Gallery field was marked with the @ManyToOne annotation, and Gallery was given a field called artList annotated with @OneToMany(mappedBy = "gallery". (Files created: Art.java, Gallery.java)
+**Entities.** Created Art and Gallery entities as models, extended PanacheEntity to inherit many useful methods. Fields were kept simple (Art has a name, creator, and Gallery; Gallery just a name and list of Arts). Many Arts would be stored under one Gallery, so Art’s Gallery field was marked with the @ManyToOne annotation, and Gallery was given a field called artList annotated with @OneToMany(mappedBy = "gallery"). (Files created: Art.java, Gallery.java)
 
 **Repositories.** Decided to use the repository pattern for facilitating the relationship between the entities and the database, extended PanacheRepository to inherit many useful methods for querying the database. Created an advanced lookup method in ArtRepository to execute an SQL query matching 1, 2, or 3 parameters (where when null is passed in for those parameters, the SQL wildcard sign “%” is used for that parameter in the query). Used an H2 database to successfully persist data after a session is closed (information was written to disk and not just in memory). (Files created: ArtRepository.java, GalleryRepository.java). 
 
